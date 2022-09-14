@@ -16,13 +16,17 @@ object Lists {
    *  - `xs.tail: List[Int]` returns the tail of the list `xs`, i.e. the the
    *    list `xs` without its `head` element
    *
-   *  ''Hint:'' instead of writing a `for` or `while` loop, think of a recursive
-   *  solution.
+   * ''Hint:'' instead of writing a `for` or `while` loop, think of a recursive
+   * solution.
    *
    * @param xs A list of natural numbers
    * @return The sum of all elements in `xs`
    */
-  def sum(xs: List[Int]): Int = ???
+  def sum(xs: List[Int]): Int =
+    xs match {
+      case x :: xx => x + sum(xx)
+      case Nil => 0
+    }
 
   /**
    * This method returns the largest element in a list of integers. If the
@@ -37,5 +41,11 @@ object Lists {
    * @return The largest element in `xs`
    * @throws java.util.NoSuchElementException if `xs` is an empty list
    */
-  def max(xs: List[Int]): Int = ???
+  def max(xs: List[Int]): Int = {
+    if (xs.isEmpty) throw new NoSuchElementException("empty argument")
+    xs match {
+      case x :: xx if xx.isEmpty => x
+      case x :: xx => Math.max(x, max(xx))
+    }
+  }
 }

@@ -11,7 +11,7 @@ import org.junit.Assert.assertEquals
  *
  * To run this test suite, start "sbt" then run the "test" command.
  */
- class ListsSuite {
+class ListsSuite {
 
   /**
    * Tests are written using the @Test annotation
@@ -25,7 +25,7 @@ import org.junit.Assert.assertEquals
   }
 
   @Test def `one plus one is three (0pts)?`: Unit = {
-    assert(1 + 1 == 3) // This assertion fails! Go ahead and fix it.
+    assert(1 + 1 == 2) // This assertion fails! Go ahead and fix it.
   }
 
   /**
@@ -50,7 +50,7 @@ import org.junit.Assert.assertEquals
    * when writing tests.
    */
   @Test def `details why one plus one is not three (0pts)`: Unit = {
-    Assert.assertEquals(3, 1 + 1) // Fix me, please!
+    Assert.assertEquals(2, 1 + 1) // Fix me, please!
   }
 
   /**
@@ -60,25 +60,26 @@ import org.junit.Assert.assertEquals
    * In the following example, we test the fact that the method `intNotZero`
    * throws an `IllegalArgumentException` if its argument is `0`.
    */
-   @Test def `intNotZero throws an exception if its argument is 0`: Unit = {
-     try {
-       intNotZero(0)
-       Assert.fail("No exception has been thrown")
-     } catch {
-       case e: IllegalArgumentException => ()
-     }
-   }
+  @Test def `intNotZero throws an exception if its argument is 0`: Unit = {
+    try {
+      intNotZero(0)
+      Assert.fail("No exception has been thrown")
+    } catch {
+      case e: IllegalArgumentException => ()
+    }
+  }
 
-   def intNotZero(x: Int): Int = {
-     if (x == 0) throw new IllegalArgumentException("zero is not allowed")
-     else x
-   }
+  def intNotZero(x: Int): Int = {
+    if (x == 0) throw new IllegalArgumentException("zero is not allowed")
+    else x
+  }
 
   /**
    * Now we finally write some tests for the list functions that have to be
    * implemented for this assignment. We fist import all members of the
    * `List` object.
    */
+
   import Lists._
 
 
@@ -94,13 +95,29 @@ import org.junit.Assert.assertEquals
    * every tested aspect of a method.
    */
   @Test def `sum of a few numbers (10pts)`: Unit = {
-    assert(sum(List(1,2,0)) == 3)
+    assert(sum(List(1, 2, 0)) == 3)
+  }
+
+  @Test def `sum of an empty List`: Unit = {
+    assert(sum(List.empty) == 0)
   }
 
   @Test def `max of a few numbers (10pts)`: Unit = {
     assert(max(List(3, 7, 2)) == 7)
   }
 
+  @Test def `max of one number`: Unit = {
+    assert(max(List(1)) == 1)
+  }
+
+  @Test def `max of empty list`: Unit = {
+    try {
+      max(List.empty)
+      Assert.fail("Now exception has been thrown")
+    } catch {
+      case e: NoSuchElementException => ()
+    }
+  }
 
 
   @Rule def individualTestTimeout = new org.junit.rules.Timeout(1000)
