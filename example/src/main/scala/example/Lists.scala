@@ -24,8 +24,8 @@ object Lists {
    */
   def sum(xs: List[Int]): Int =
     xs match {
-      case x :: xx => x + sum(xx)
       case Nil => 0
+      case x :: xx => x + sum(xx)
     }
 
   /**
@@ -42,9 +42,9 @@ object Lists {
    * @throws java.util.NoSuchElementException if `xs` is an empty list
    */
   def max(xs: List[Int]): Int = {
-    if (xs.isEmpty) throw new NoSuchElementException("empty argument")
     xs match {
-      case x :: xx if xx.isEmpty => x
+      case Nil => throw new NoSuchElementException("empty argument")
+      case x :: Nil => x
       case x :: xx => Math.max(x, max(xx))
     }
   }
