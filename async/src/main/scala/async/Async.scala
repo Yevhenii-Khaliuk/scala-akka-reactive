@@ -1,9 +1,8 @@
 package async
 
-import scala.concurrent.{Future, Promise}
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.Try
-import scala.util.control.NonFatal
+import scala.concurrent.{Future, Promise}
+import scala.util.{Failure, Success, Try}
 
 object Async extends AsyncInterface {
 
@@ -14,7 +13,7 @@ object Async extends AsyncInterface {
     * should return a failed `Future` with the same error.
     */
   def transformSuccess(eventuallyX: Future[Int]): Future[Boolean] =
-    ???
+    eventuallyX.map(_ % 2 == 0)
 
   /**
     * Transforms a failed asynchronous `Int` computation into a
@@ -24,7 +23,7 @@ object Async extends AsyncInterface {
     * should return a successful `Future` with the same value.
     */
   def recoverFailure(eventuallyX: Future[Int]): Future[Int] =
-    ???
+    eventuallyX.recover(_ => -1)
 
   /**
     * Perform two asynchronous computation, one after the other. `makeAsyncComputation2`
@@ -36,10 +35,11 @@ object Async extends AsyncInterface {
     * second asynchronous computations, paired together.
     */
   def sequenceComputations[A, B](
-    makeAsyncComputation1: () => Future[A],
-    makeAsyncComputation2: () => Future[B]
-  ): Future[(A, B)] =
-    ???
+                                  makeAsyncComputation1: () => Future[A],
+                                  makeAsyncComputation2: () => Future[B]
+                                ): Future[(A, B)] = {
+    makeAsyncComputation1().flatMap(Future.successful(_).zip(makeAsyncComputation2()))
+  }
 
   /**
     * Concurrently perform two asynchronous computations and pair their successful
@@ -48,10 +48,10 @@ object Async extends AsyncInterface {
     * If one of them fails, this method should return the failure.
     */
   def concurrentComputations[A, B](
-    makeAsyncComputation1: () => Future[A],
-    makeAsyncComputation2: () => Future[B]
-  ): Future[(A, B)] =
-    ???
+                                    makeAsyncComputation1: () => Future[A],
+                                    makeAsyncComputation2: () => Future[B]
+                                  ): Future[(A, B)] =
+    makeAsyncComputation1().zip(makeAsyncComputation2())
 
   /**
     * Attempt to perform an asynchronous computation.
@@ -60,17 +60,27 @@ object Async extends AsyncInterface {
     * are eventually performed.
     */
   def insist[A](makeAsyncComputation: () => Future[A], maxAttempts: Int): Future[A] =
-    ???
+    if (maxAttempts <= 1)
+      makeAsyncComputation()
+    else
+      makeAsyncComputation().recoverWith(e => insist(makeAsyncComputation, maxAttempts - 1))
 
   /**
     * Turns a callback-based API into a Future-based API
+    *
     * @return A `FutureBasedApi` that forwards calls to `computeIntAsync` to the `callbackBasedApi`
     *         and returns its result in a `Future` value
     *
-    * Hint: Use a `Promise`
+    *         Hint: Use a `Promise`
     */
-  def futurize(callbackBasedApi: CallbackBasedApi): FutureBasedApi =
-    ???
+  def futurize(callbackBasedApi: CallbackBasedApi): FutureBasedApi = {
+    val p = Promise[Int]()
+    callbackBasedApi.computeIntAsync {
+      case Success(value) => p.success(value)
+      case Failure(exception) => p.failure(exception)
+    }
+    () => p.future
+  }
 
 }
 
