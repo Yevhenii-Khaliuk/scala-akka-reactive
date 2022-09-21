@@ -96,6 +96,7 @@ class BinaryTreeSet extends Actor {
       context become normal
     case operation: Operation =>
       pendingQueue = pendingQueue enqueue operation
+    case GC => ()
   }
 
 }
