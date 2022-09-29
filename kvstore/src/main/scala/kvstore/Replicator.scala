@@ -23,13 +23,13 @@ class Replicator(val replica: ActorRef) extends Actor {
 
 
   // map from sequence number to pair of sender and request
-  var acks = Map.empty[Long, (ActorRef, Replicate)]
+  var acknowledgements = Map.empty[Long, (ActorRef, Replicate)]
   // a sequence of not-yet-sent snapshots (you can disregard this if not implementing batching)
   var pending = Vector.empty[Snapshot]
 
   context.system.scheduler.scheduleAtFixedRate(100.milliseconds, 100.milliseconds) { () =>
-    acks.toSeq.sortBy(_._1) foreach {
-      case (seq, (_, request)) => replica ! Snapshot(request.key, request.valueOption, seq)
+    acknowledgements.toSeq.sortBy(_._1) foreach {
+      case (seq, (_, message)) => replica ! Snapshot(message.key, message.valueOption, seq)
     }
   }
 
@@ -44,14 +44,16 @@ class Replicator(val replica: ActorRef) extends Actor {
 
   /* TODO Behavior for the Replicator. */
   def receive: Receive = {
-    case Replicate(key, valueOption, id) =>
+    case message: Replicate =>
       val seq = nextSeq()
-      acks += seq -> (sender, Replicate(key, valueOption, id))
-      replica ! Snapshot(key, valueOption, seq)
+      acknowledgements += seq -> (sender, message)
+      replica ! Snapshot(message.key, message.valueOption, seq)
     case SnapshotAck(key, seq) =>
-      val (leader, request) = acks(seq)
-      acks -= seq
-      leader ! Replicated(key, request.id)
+      acknowledgements.get(seq) foreach {
+        case (client, request) =>
+          acknowledgements -= seq
+          client ! Replicated(key, request.id)
+      }
   }
 
 }
