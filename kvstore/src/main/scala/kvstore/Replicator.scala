@@ -46,7 +46,7 @@ class Replicator(val replica: ActorRef) extends Actor {
   def receive: Receive = {
     case message: Replicate =>
       val seq = nextSeq()
-      acknowledgements += seq -> (sender, message)
+      acknowledgements += (seq -> (sender, message))
       replica ! Snapshot(message.key, message.valueOption, seq)
     case SnapshotAck(key, seq) =>
       acknowledgements.get(seq) foreach {
